@@ -1,5 +1,6 @@
 package com.example.quizylecture;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +19,9 @@ public class MainActivity extends Activity {
             new Question("Water boils at 100°C.", true)
     };
     private int currentIndex = 0;
+
+    private int score = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,25 +49,36 @@ public class MainActivity extends Activity {
 
     private void updateQuestion() {
 
-
         questionTextView.setText(questionBank[currentIndex].getQuestionText());
     }
 
     private void moveToNextQuestion() {
-        currentIndex = (currentIndex + 1) % questionBank.length;
-        Log.d(TAG, "Current index: " + currentIndex);
-        updateQuestion();
-        Toast.makeText(this, "Next Question Loading...", Toast.LENGTH_SHORT).show();
+        currentIndex++;
+        // If there are more questions, update the UI; else, show results by launching ResultActivity.
+        if (currentIndex < questionBank.length) {
+            updateQuestion();
+        } else {
+            // All questions are answered, launch the result activity.
+            Intent resultIntent = new Intent(MainActivity.this, ResultActivity.class);
+            resultIntent.putExtra(ResultActivity.EXTRA_SCORE, score);
+            resultIntent.putExtra(ResultActivity.EXTRA_TOTAL, questionBank.length);
+            startActivity(resultIntent);
+            // Optionally, finish this activity if you don't want to allow going back.
+            finish();
+        }
     }
+
 
     private void checkAnswer(boolean userAnswer) {
         boolean correctAnswer = questionBank[currentIndex].isAnswerTrue();
         if (userAnswer == correctAnswer) {
+            score++;  // Increment the score for a correct answer.
             Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Answer was Correct.");
+            Log.d(TAG, "Answer was Correct. Score: " + score);
         } else {
             Toast.makeText(this, "Incorrect!", Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Answer was Incorrect.");
         }
     }
+
 }
