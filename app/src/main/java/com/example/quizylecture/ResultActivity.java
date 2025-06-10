@@ -3,43 +3,54 @@ package com.example.quizylecture;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class ResultActivity extends Activity {
 
-    public static final String EXTRA_SCORE = "com.example.quizylecture.score";
-    public static final String EXTRA_TOTAL = "com.example.quizylecture.total";
-
-    private TextView scoreTextView;
-    private Button restartButton;
+    private TextView resultSummary;
+    private Button restartButton, reviewButton;
+    private ArrayList<Question> questionList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
-        scoreTextView = findViewById(R.id.score_text_view);
+        resultSummary = findViewById(R.id.result_summary);
         restartButton = findViewById(R.id.restart_button);
+        reviewButton = findViewById(R.id.review_button);
 
-        // Get score and total from intent extras
         Intent intent = getIntent();
-        int score = intent.getIntExtra(EXTRA_SCORE, 0);
-        int total = intent.getIntExtra(EXTRA_TOTAL, 0);
+        int scorePercent = intent.getIntExtra("scorePercent", 0);
+        int answered = intent.getIntExtra("answered", 0);
+        int skipped = intent.getIntExtra("skipped", 0);
+        int correct = intent.getIntExtra("correct", 0);
+        int total = intent.getIntExtra("total", 0);
 
-        scoreTextView.setText("Your Score: " + score + "/" + total);
+        questionList = (ArrayList<Question>) intent.getSerializableExtra("questionList");
 
-        // Set restart button listener to start MainActivity again
-        restartButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent restartIntent = new Intent(ResultActivity.this, MainActivity.class);
-                // Clear the activity stack if you want a fresh start
-                restartIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(restartIntent);
-                finish();
-            }
+        resultSummary.setText(
+                "Final Score: " + scorePercent + "%\n\n" +
+                        "Total Questions: " + total + "\n" +
+                        "Answered: " + answered + "\n" +
+                        "Skipped: " + skipped + "\n" +
+                        "Correct: " + correct
+        );
+
+        restartButton.setOnClickListener(v -> {
+            Intent restartIntent = new Intent(this, MainActivity.class);
+            restartIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(restartIntent);
+            finish();
+        });
+
+        reviewButton.setOnClickListener(v -> {
+            Intent reviewIntent = new Intent(this, ReviewActivity.class);
+            reviewIntent.putExtra("questionList", questionList);
+            startActivity(reviewIntent);
         });
     }
 }
